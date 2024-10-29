@@ -67,7 +67,7 @@ async function loadSample(autoplay = true, swipeDirection = "left") {
             }
 
             filenameDisplay.classList.remove("swipe-out-left", "swipe-out-right");
-            filenameDisplay.textContent = `Playing: ${currentSample}`;
+            filenameDisplay.textContent = `${currentSample}`;
             
             if (sessionStarted) {
                 filenameDisplay.style.display = "block"; // Show filename display after session starts
@@ -93,7 +93,7 @@ function startSession() {
     // Display filename and start playback on first click
     const filenameDisplay = document.getElementById("filenameDisplay");
     filenameDisplay.style.display = "block"; // Show filename display
-    filenameDisplay.textContent = `Playing: ${currentSample}`;
+    filenameDisplay.textContent = `${currentSample}`;
     filenameDisplay.classList.add("fade-in");
 
     audioPlayer.play().catch(error => {
