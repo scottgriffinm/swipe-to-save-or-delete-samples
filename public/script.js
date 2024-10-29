@@ -103,6 +103,7 @@ function startSession() {
 
 // Save the sample to Google Drive
 async function saveSample() {
+    const saveMessage = document.getElementById("saveMessage");
     try {
         const res = await fetch("/api/add-to-drive", {
             method: "POST",
@@ -110,10 +111,25 @@ async function saveSample() {
             body: JSON.stringify({ fileName: currentSample }),
         });
         const result = await res.json();
-        alert(result.message);
+
+        if (res.ok) {
+            // Success message
+            saveMessage.textContent = "File saved to Google Drive successfully!";
+            saveMessage.classList.add("fade-in-out", "success");
+        } else {
+            throw new Error(result.error || "Unknown error");
+        }
     } catch (error) {
+        // Failure message
         console.error("Error adding file to Google Drive:", error);
+        saveMessage.textContent = "Failed to save to Google Drive.";
+        saveMessage.classList.add("fade-in-out", "failure");
     }
+
+    // Remove fade-in-out and color class after the animation ends
+    setTimeout(() => {
+        saveMessage.classList.remove("fade-in-out", "success", "failure");
+    }, 3000);
 }
 
 // Detect swipe gestures on mobile

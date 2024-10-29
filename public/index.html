@@ -46,9 +46,6 @@
             animation: swipeOutRight 0.5s forwards;
         }
 
-        .fade-in {
-            animation: fadeIn 0.5s forwards;
-        }
 
         /* Keyframe animations */
         @keyframes swipeOutLeft {
@@ -65,7 +62,39 @@
             0% { opacity: 0; }
             100% { opacity: 1; }
         }
+.fade-message {
+    display: none;
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 10px 20px;
+    color: white;
+    font-weight: bold;
+    border-radius: 5px;
+    opacity: 0;
+    transition: opacity 1.5s ease-in-out;
+    z-index: 1000;
+}
 
+.fade-in-out {
+    display: block;
+    opacity: 1;
+    animation: fadeOut 3s forwards; /* Fades out over 3 seconds */
+}
+
+.success {
+    background-color: #4CAF50; /* Green for success */
+}
+
+.failure {
+    background-color: #f44336; /* Red for failure */
+}
+
+@keyframes fadeOut {
+    0% { opacity: 1; }
+    100% { opacity: 0; }
+}
         /* Style adjustments */
         #signInButton, #startButton {
             margin-top: 10px;
@@ -84,7 +113,7 @@
     </style>
 </head>
 <body>
-
+    <div id="saveMessage" class="fade-message"></div>
     <!-- Sign-in button -->
     <button id="signInButton">Sign in with Google</button>
 
@@ -97,6 +126,7 @@
             <audio id="audioPlayer" loop></audio>
         </div>
     </div>
+    
     <script src="script.js"></script>
 </body>
 </html>
