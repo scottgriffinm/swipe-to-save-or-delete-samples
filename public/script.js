@@ -41,11 +41,13 @@ async function init() {
     }
 }
 
-// Load a sample with optional autoplay and swipe animations
 async function loadSample(autoplay = true, swipeDirection = "left") {
     const filenameDisplay = document.getElementById("filenameDisplay");
 
-    if (sessionStarted) {
+    // Reset animation classes before applying new ones
+    filenameDisplay.classList.remove("swipe-out-left", "swipe-out-right", "fade-in");
+
+    if (sessionStarted && filenameDisplay.style.display === "block") {
         filenameDisplay.classList.add(swipeDirection === "left" ? "swipe-out-left" : "swipe-out-right");
     }
 
@@ -59,8 +61,7 @@ async function loadSample(autoplay = true, swipeDirection = "left") {
             const audioPlayer = document.getElementById("audioPlayer");
             audioPlayer.src = `/api/sample/${file}`;
 
-            // Start looping playback if autoplay is true
-            if (autoplay) {
+            if (autoplay && sessionStarted) {
                 audioPlayer.play().catch(error => {
                     console.error("Autoplay failed:", error);
                 });
@@ -69,7 +70,11 @@ async function loadSample(autoplay = true, swipeDirection = "left") {
 
             filenameDisplay.classList.remove("swipe-out-left", "swipe-out-right");
             filenameDisplay.textContent = `Playing: ${currentSample}`;
-            if (sessionStarted) filenameDisplay.classList.add("fade-in");
+            
+            if (sessionStarted) {
+                filenameDisplay.style.display = "block"; // Show filename display after session starts
+                filenameDisplay.classList.add("fade-in");
+            }
 
             setTimeout(() => filenameDisplay.classList.remove("fade-in"), 500);
         } catch (error) {
@@ -87,8 +92,9 @@ function startSession() {
     
     document.getElementById("startButton").style.display = "none"; // Hide the start button
 
-    // Show filename and start playback
+    // Display filename and start playback on first click
     const filenameDisplay = document.getElementById("filenameDisplay");
+    filenameDisplay.style.display = "block"; // Show filename display
     filenameDisplay.textContent = `Playing: ${currentSample}`;
     filenameDisplay.classList.add("fade-in");
 

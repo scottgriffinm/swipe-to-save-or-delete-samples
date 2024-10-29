@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Audio Sampler with Google Drive</title>
     <style>
+
+        
         #audioContainer { display: none; margin-top: 20px; text-align: center; }
         .arrow { cursor: pointer; font-size: 24px; margin: 0 20px; display: none; }
         #filenameDisplay { font-size: 18px; margin-top: 10px; }
@@ -35,6 +37,15 @@
     @keyframes fadeIn {
         0% { opacity: 0; }
         100% { opacity: 1; }
+    }
+
+    /* Prevent text selection for filename display */
+    #filenameDisplay {
+        display:none;
+        user-select: none;      /* Standard */
+        -webkit-user-select: none; /* Safari */
+        -moz-user-select: none; /* Firefox */
+        -ms-user-select: none;  /* IE 10+ */
     }
     
     </style>
