@@ -1,0 +1,8 @@
+# Ignore node_modules folder
+node_modules/
+
+# Ignore contents of the samples folder
+samples/*
+
+# Ignore config.js file (contains sensitive information)
+config.js

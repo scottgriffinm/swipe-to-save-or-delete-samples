@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Sampler with Google Drive</title>
+    <style>
+        #audioContainer { display: none; margin-top: 20px; text-align: center; }
+        .arrow { cursor: pointer; font-size: 24px; margin: 0 20px; display: none; }
+        #filenameDisplay { font-size: 18px; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Random Audio Sampler</h1>
+
+    <!-- Sign-in button -->
+    <button id="signInButton">Sign in with Google</button>
+
+    <!-- Container for the audio player and filename display -->
+    <div id="audioContainer">
+        <!-- Left arrow for desktop navigation -->
+        <span id="leftArrow" class="arrow">&#9664;</span>
+
+        <!-- Filename display and start button -->
+        <div>
+            <p id="filenameDisplay"></p>
+            <button id="startButton">Start Session</button>
+            <audio id="audioPlayer" loop style="display: none;"></audio>
+        </div>
+
+        <!-- Right arrow for desktop navigation -->
+        <span id="rightArrow" class="arrow">&#9654;</span>
+    </div>
+
+    <p id="instructions">Swipe left to get a new sample, swipe right to save the sample to Google Drive.</p>
+
+    <script src="script.js"></script>
+</body>
+</html>
