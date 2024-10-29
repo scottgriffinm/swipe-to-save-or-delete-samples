@@ -29,8 +29,8 @@ async function init() {
             detectSwipe(); // Enable swipe detection on mobile
             document.getElementById("instructions").textContent = "Swipe left to get a new sample, swipe right to save the sample to Google Drive.";
         } else {
-            setupDesktopControls(); // Enable arrow controls on desktop
-            document.getElementById("instructions").textContent = "Click the arrows to navigate samples.";
+            setupDesktopDragControls(); // Enable click-and-drag controls on desktop
+            document.getElementById("instructions").textContent = "Click and drag left to get a new sample, or right to save the sample.";
         }
     } else {
         document.getElementById("signInButton").style.display = "block";
@@ -66,10 +66,6 @@ function startSession() {
     // Show filename and hide start button
     document.getElementById("filenameDisplay").textContent = `Playing: ${currentSample}`;
     document.getElementById("startButton").style.display = "none";
-    
-    // Show navigation arrows for desktop
-    document.getElementById("leftArrow").style.display = "inline";
-    document.getElementById("rightArrow").style.display = "inline";
 }
 
 // Function to save the sample to Google Drive
@@ -116,13 +112,31 @@ function detectSwipe() {
     });
 }
 
-// Set up arrow controls for desktop devices
-function setupDesktopControls() {
-    const leftArrow = document.getElementById("leftArrow");
-    const rightArrow = document.getElementById("rightArrow");
+// Setup click-and-drag controls for desktop to mimic swipe functionality
+function setupDesktopDragControls() {
+    let dragStartX = 0;
+    let dragEndX = 0;
+    const audioContainer = document.getElementById("audioContainer");
 
-    leftArrow.addEventListener("click", getSample); // Left arrow gets a new sample
-    rightArrow.addEventListener("click", saveSample); // Right arrow saves the sample
+    // Listen for mouse down event to initiate the drag
+    audioContainer.addEventListener("mousedown", (e) => {
+        dragStartX = e.clientX;
+    });
+
+    // Listen for mouse up event to detect drag direction
+    document.addEventListener("mouseup", (e) => {
+        dragEndX = e.clientX;
+        handleDesktopDragGesture();
+    });
+
+    function handleDesktopDragGesture() {
+        if (dragEndX < dragStartX - 50) { // Drag left to get new sample
+            getSample();
+        }
+        if (dragEndX > dragStartX + 50) { // Drag right to save sample
+            saveSample();
+        }
+    }
 }
 
 // Function to fetch a new sample and play it in a loop
