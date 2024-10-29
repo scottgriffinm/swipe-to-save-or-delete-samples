@@ -31,10 +31,8 @@ async function init() {
 
         if (isMobileDevice()) {
             detectSwipe();
-            document.getElementById("instructions").textContent = "Swipe left to get a new sample, swipe right to save the sample to Google Drive.";
         } else {
             setupDesktopDragControls();
-            document.getElementById("instructions").textContent = "Click and drag left to get a new sample, or right to save the sample.";
         }
     } else {
         document.getElementById("signInButton").style.display = "block";
