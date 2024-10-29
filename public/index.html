@@ -5,70 +5,100 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Audio Sampler with Google Drive</title>
     <style>
+        /* Center content horizontally */
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
 
-        
-        #audioContainer { display: none; margin-top: 20px; text-align: center; }
-         #filenameDisplay { font-size: 18px; margin-top: 10px; }
-    /* Animation styles */
-    .swipe-out-left {
-        animation: swipeOutLeft 0.5s forwards;
-    }
+        /* Center the main container */
+        #audioContainer {
+            display: none;
+            margin-top: 20px;
+            text-align: center;
+            flex-direction: column;
+            align-items: center;
+        }
 
-    .swipe-out-right {
-        animation: swipeOutRight 0.5s forwards;
-    }
+        /* Center filename display */
+        #filenameDisplay {
+            font-size: 18px;
+            margin-top: 10px;
+            display: none;
+            user-select: none;      /* Standard */
+            -webkit-user-select: none; /* Safari */
+            -moz-user-select: none; /* Firefox */
+            -ms-user-select: none;  /* IE 10+ */
+        }
 
-    .fade-in {
-        animation: fadeIn 0.5s forwards;
-    }
+        /* Animation styles */
+        .swipe-out-left {
+            animation: swipeOutLeft 0.5s forwards;
+        }
 
-    /* Keyframe animations */
-    @keyframes swipeOutLeft {
-        0% { opacity: 1; transform: translateX(0); }
-        100% { opacity: 0; transform: translateX(-100%); }
-    }
+        .swipe-out-right {
+            animation: swipeOutRight 0.5s forwards;
+        }
 
-    @keyframes swipeOutRight {
-        0% { opacity: 1; transform: translateX(0); }
-        100% { opacity: 0; transform: translateX(100%); }
-    }
+        .fade-in {
+            animation: fadeIn 0.5s forwards;
+        }
 
-    @keyframes fadeIn {
-        0% { opacity: 0; }
-        100% { opacity: 1; }
-    }
+        /* Keyframe animations */
+        @keyframes swipeOutLeft {
+            0% { opacity: 1; transform: translateX(0); }
+            100% { opacity: 0; transform: translateX(-100%); }
+        }
 
-    /* Prevent text selection for filename display */
-    #filenameDisplay {
-        display:none;
-        user-select: none;      /* Standard */
-        -webkit-user-select: none; /* Safari */
-        -moz-user-select: none; /* Firefox */
-        -ms-user-select: none;  /* IE 10+ */
-    }
-    
+        @keyframes swipeOutRight {
+            0% { opacity: 1; transform: translateX(0); }
+            100% { opacity: 0; transform: translateX(100%); }
+        }
+
+        @keyframes fadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+
+        /* Style adjustments */
+        #signInButton, #startButton {
+            margin-top: 10px;
+        }
+
+        #instructions {
+            margin-top: 20px;
+            max-width: 300px;
+        }
+
+        /* Center audio player */
+        #audioPlayer {
+            display: none;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
-    <h1>Random Audio Sampler</h1>
 
     <!-- Sign-in button -->
     <button id="signInButton">Sign in with Google</button>
 
     <!-- Container for the audio player and filename display -->
     <div id="audioContainer">
-
         <!-- Filename display and start button -->
         <div>
             <p id="filenameDisplay"></p>
             <button id="startButton">Start Session</button>
-            <audio id="audioPlayer" loop style="display: none;"></audio>
+            <audio id="audioPlayer" loop></audio>
         </div>
-
-
     </div>
 
-    <p id="instructions">Swipe left to get a new sample, swipe right to save the sample to Google Drive.</p>
+    <p id="instructions">Swipe left to trash, swipe right to save to Google Drive.</p>
 
     <script src="script.js"></script>
 </body>
