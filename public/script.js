@@ -1,9 +1,13 @@
-// public/script.js
-
 let currentSample = null;
 let originalFile = null;
+let sessionStarted = false;
 
-// Helper function to check if the user is authenticated
+// Detect if the device is mobile
+function isMobileDevice() {
+    return /Mobi|Android/i.test(navigator.userAgent);
+}
+
+// Check if the user is authenticated
 async function checkAuthentication() {
     try {
         const response = await fetch("/auth/status");
@@ -15,7 +19,7 @@ async function checkAuthentication() {
     }
 }
 
-// Initialize the app by checking authentication and setting up the interface
+// Initialize the app
 async function init() {
     const isAuthenticated = await checkAuthentication();
 
@@ -23,13 +27,13 @@ async function init() {
         document.getElementById("signInButton").style.display = "none";
         document.getElementById("audioContainer").style.display = "flex";
         
-        await loadSample(); // Load sample but don't play it
+        await loadSample(false); // Load the first sample without autoplay or animations
 
         if (isMobileDevice()) {
-            detectSwipe(); // Enable swipe detection on mobile
+            detectSwipe();
             document.getElementById("instructions").textContent = "Swipe left to get a new sample, swipe right to save the sample to Google Drive.";
         } else {
-            setupDesktopDragControls(); // Enable click-and-drag controls on desktop
+            setupDesktopDragControls();
             document.getElementById("instructions").textContent = "Click and drag left to get a new sample, or right to save the sample.";
         }
     } else {
@@ -37,38 +41,63 @@ async function init() {
     }
 }
 
-// Function to get a random sample without playing it
-async function loadSample() {
-    try {
-        const response = await fetch("/api/sample");
-        const { file, originalFile: origFile } = await response.json();
-        currentSample = file;
-        originalFile = origFile;
+// Load a sample with optional autoplay and swipe animations
+async function loadSample(autoplay = true, swipeDirection = "left") {
+    const filenameDisplay = document.getElementById("filenameDisplay");
 
-        // Load audio source but don't play yet
-        const audioPlayer = document.getElementById("audioPlayer");
-        audioPlayer.src = `/api/sample/${file}`;
-        
-        // Show "Start Session" button
-        const filenameDisplay = document.getElementById("filenameDisplay");
-        filenameDisplay.textContent = ""; // Clear filename display
-        document.getElementById("startButton").style.display = "inline-block";
-    } catch (error) {
-        console.error("Error fetching sample:", error);
+    if (sessionStarted) {
+        filenameDisplay.classList.add(swipeDirection === "left" ? "swipe-out-left" : "swipe-out-right");
     }
+
+    setTimeout(async () => {
+        try {
+            const response = await fetch("/api/sample");
+            const { file, originalFile: origFile } = await response.json();
+            currentSample = file;
+            originalFile = origFile;
+
+            const audioPlayer = document.getElementById("audioPlayer");
+            audioPlayer.src = `/api/sample/${file}`;
+
+            // Start looping playback if autoplay is true
+            if (autoplay) {
+                audioPlayer.play().catch(error => {
+                    console.error("Autoplay failed:", error);
+                });
+                audioPlayer.loop = true;
+            }
+
+            filenameDisplay.classList.remove("swipe-out-left", "swipe-out-right");
+            filenameDisplay.textContent = `Playing: ${currentSample}`;
+            if (sessionStarted) filenameDisplay.classList.add("fade-in");
+
+            setTimeout(() => filenameDisplay.classList.remove("fade-in"), 500);
+        } catch (error) {
+            console.error("Error fetching sample:", error);
+        }
+    }, sessionStarted ? 500 : 0);
 }
 
-// Start session by playing the sample
+// Start session on "Start Session" button click
 function startSession() {
-    const audioPlayer = document.getElementById("audioPlayer");
-    audioPlayer.play();
+    sessionStarted = true;
     
-    // Show filename and hide start button
-    document.getElementById("filenameDisplay").textContent = `Playing: ${currentSample}`;
-    document.getElementById("startButton").style.display = "none";
+    const audioPlayer = document.getElementById("audioPlayer");
+    audioPlayer.loop = true;
+    
+    document.getElementById("startButton").style.display = "none"; // Hide the start button
+
+    // Show filename and start playback
+    const filenameDisplay = document.getElementById("filenameDisplay");
+    filenameDisplay.textContent = `Playing: ${currentSample}`;
+    filenameDisplay.classList.add("fade-in");
+
+    audioPlayer.play().catch(error => {
+        console.error("Autoplay blocked. User interaction required:", error);
+    });
 }
 
-// Function to save the sample to Google Drive
+// Save the sample to Google Drive
 async function saveSample() {
     try {
         const res = await fetch("/api/add-to-drive", {
@@ -83,22 +112,18 @@ async function saveSample() {
     }
 }
 
-// Detect if the device is mobile
-function isMobileDevice() {
-    return /Mobi|Android/i.test(navigator.userAgent);
-}
-
-// Detect swipe events for mobile devices
+// Detect swipe gestures on mobile
 function detectSwipe() {
     let touchstartX = 0;
     let touchendX = 0;
 
     function handleGesture() {
-        if (touchendX < touchstartX) {
-            getSample();
+        if (touchendX < touchstartX - 50) { // Swipe left
+            loadSample(true, "left");
         }
-        if (touchendX > touchstartX) {
+        if (touchendX > touchstartX + 50) { // Swipe right
             saveSample();
+            loadSample(true, "right");
         }
     }
 
@@ -112,40 +137,33 @@ function detectSwipe() {
     });
 }
 
-// Setup click-and-drag controls for desktop to mimic swipe functionality
+// Detect drag gestures on desktop for left/right navigation
 function setupDesktopDragControls() {
     let dragStartX = 0;
     let dragEndX = 0;
     const audioContainer = document.getElementById("audioContainer");
 
-    // Listen for mouse down event to initiate the drag
     audioContainer.addEventListener("mousedown", (e) => {
         dragStartX = e.clientX;
     });
 
-    // Listen for mouse up event to detect drag direction
     document.addEventListener("mouseup", (e) => {
         dragEndX = e.clientX;
         handleDesktopDragGesture();
     });
 
     function handleDesktopDragGesture() {
-        if (dragEndX < dragStartX - 50) { // Drag left to get new sample
-            getSample();
+        if (dragEndX < dragStartX - 50) { // Drag left
+            loadSample(true, "left");
         }
-        if (dragEndX > dragStartX + 50) { // Drag right to save sample
+        if (dragEndX > dragStartX + 50) { // Drag right
             saveSample();
+            loadSample(true, "right");
         }
     }
 }
 
-// Function to fetch a new sample and play it in a loop
-async function getSample() {
-    await loadSample();
-    startSession();
-}
-
-// Sign-in button click handler to redirect to Google sign-in
+// Sign-in button click handler
 document.getElementById("signInButton").addEventListener("click", () => {
     window.location.href = "/auth/google";
 });
@@ -153,5 +171,4 @@ document.getElementById("signInButton").addEventListener("click", () => {
 // Start session button click handler
 document.getElementById("startButton").addEventListener("click", startSession);
 
-// Initialize the app on load
-init();
+init(); // Initialize the app on load

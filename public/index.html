@@ -8,6 +8,35 @@
         #audioContainer { display: none; margin-top: 20px; text-align: center; }
         .arrow { cursor: pointer; font-size: 24px; margin: 0 20px; display: none; }
         #filenameDisplay { font-size: 18px; margin-top: 10px; }
+    /* Animation styles */
+    .swipe-out-left {
+        animation: swipeOutLeft 0.5s forwards;
+    }
+
+    .swipe-out-right {
+        animation: swipeOutRight 0.5s forwards;
+    }
+
+    .fade-in {
+        animation: fadeIn 0.5s forwards;
+    }
+
+    /* Keyframe animations */
+    @keyframes swipeOutLeft {
+        0% { opacity: 1; transform: translateX(0); }
+        100% { opacity: 0; transform: translateX(-100%); }
+    }
+
+    @keyframes swipeOutRight {
+        0% { opacity: 1; transform: translateX(0); }
+        100% { opacity: 0; transform: translateX(100%); }
+    }
+
+    @keyframes fadeIn {
+        0% { opacity: 0; }
+        100% { opacity: 1; }
+    }
+    
     </style>
 </head>
 <body>
