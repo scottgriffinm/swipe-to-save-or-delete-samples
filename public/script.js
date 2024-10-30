@@ -219,26 +219,41 @@ function detectSwipe() {
 function setupDesktopDragControls() {
     let dragStartX = 0;
     let dragEndX = 0;
-    const audioContainer = document.getElementById("audioContainer");
+    let isDragging = false;
+    const swipeThreshold = 50; // Minimum distance for a swipe
+    const clickThreshold = 5; // Small movement allowed for a click
 
-    audioContainer.addEventListener("mousedown", (e) => {
+    document.addEventListener("mousedown", (e) => {
         dragStartX = e.clientX;
+        isDragging = false; // Reset dragging to false on each mousedown
+    });
+
+    document.addEventListener("mousemove", (e) => {
+        // Only set dragging to true if movement exceeds the click threshold
+        if (Math.abs(e.clientX - dragStartX) > clickThreshold) {
+            isDragging = true;
+            dragEndX = e.clientX; // Update dragEndX only when dragging is true
+        }
     });
 
     document.addEventListener("mouseup", (e) => {
-        dragEndX = e.clientX;
-        handleDesktopDragGesture();
-    });
+        const dragDistance = dragEndX - dragStartX;
 
-    function handleDesktopDragGesture() {
-        if (dragEndX < dragStartX - 50) { // Drag left
-            loadSample(true, "left");
+        if (isDragging && Math.abs(dragDistance) > swipeThreshold) {
+            // Determine direction of the swipe
+            if (dragDistance < 0) { // Left swipe
+                loadSample(true, "left");
+            } else if (dragDistance > 0) { // Right swipe
+                saveSample();
+                loadSample(true, "right");
+            }
         }
-        if (dragEndX > dragStartX + 50) { // Drag right
-            saveSample();
-            loadSample(true, "right");
-        }
-    }
+
+        // Reset values after each mouseup event
+        isDragging = false;
+        dragStartX = 0;
+        dragEndX = 0;
+    });
 }
 
 // Sign-in button click handler
