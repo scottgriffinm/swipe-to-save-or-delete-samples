@@ -5,6 +5,7 @@ let audioContext = null;
 let audioBuffer = null;
 let audioSource = null;
 let playbackTimeoutId = null; // Store the timeout ID globally
+let isPlaying = false;
 
 // Detect if the device is mobile
 function isMobileDevice() {
@@ -39,8 +40,6 @@ async function init() {
             setupDesktopDragControls();
         }
 
-        // Add click listener to restart the sample
-        document.getElementById("audioContainer").addEventListener("click", startPlayback);
     } else {
         document.getElementById("signInButton").style.display = "block";
     }
@@ -95,6 +94,14 @@ async function loadAudioBuffer(url) {
     console.log(`Loaded audio file length: ${audioBuffer.duration.toFixed(2)} seconds`);
 }
 
+function togglePlayback() {
+    if (isPlaying) {
+        stopPlayback();
+    } else {
+        startPlayback();
+    }
+}
+
 // Start playback with seamless looping
 function startPlayback() {
     // Clear any existing audio source and timeout
@@ -116,6 +123,8 @@ function startPlayback() {
     // Start the audio source
     audioSource.start();
 
+    isPlaying = true;
+
     // Calculate the stop time as three times the duration
     const playbackDuration = audioBuffer.duration * 3 * 1000; // Convert seconds to milliseconds
 
@@ -130,6 +139,7 @@ function stopPlayback() {
     if (audioSource) {
         audioSource.stop();
         audioSource = null;
+        isPlaying = false;
     }
 }
 
@@ -139,12 +149,17 @@ function startSession() {
     
     const filenameDisplay = document.getElementById("filenameDisplay");
     document.getElementById("startButton").style.display = "none";
-
+   
     filenameDisplay.style.display = "block";
     filenameDisplay.textContent = `${currentSample}`;
     filenameDisplay.classList.add("fade-in");
 
     startPlayback(); // Start audio playback
+    setTimeout(() => {
+        // Add click listener to restart the sample
+        document.addEventListener("click", togglePlayback);
+    }, 1000); // 1000 milliseconds = 1 second
+   
 }
 
 // Save the sample to Google Drive
