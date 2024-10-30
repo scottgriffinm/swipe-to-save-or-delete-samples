@@ -1,6 +1,8 @@
 let currentSample = null;
 let originalFile = null;
 let sessionStarted = false;
+let loopCount = 0;
+const maxLoops = 3;
 
 // Detect if the device is mobile
 function isMobileDevice() {
@@ -34,15 +36,18 @@ async function init() {
         } else {
             setupDesktopDragControls();
         }
+
+        // Add click listener to restart the sample loop
+        document.getElementById("audioContainer").addEventListener("click", restartLoop);
     } else {
         document.getElementById("signInButton").style.display = "block";
     }
 }
 
+// Function to load a sample and handle looping
 async function loadSample(autoplay = true, swipeDirection = "left") {
     const filenameDisplay = document.getElementById("filenameDisplay");
 
-    // Reset animation classes before applying new ones
     filenameDisplay.classList.remove("swipe-out-left", "swipe-out-right", "fade-in");
 
     if (sessionStarted && filenameDisplay.style.display === "block") {
@@ -58,19 +63,22 @@ async function loadSample(autoplay = true, swipeDirection = "left") {
 
             const audioPlayer = document.getElementById("audioPlayer");
             audioPlayer.src = `/api/sample/${file}`;
+            loopCount = 0; // Reset loop count for new sample
 
             if (autoplay && sessionStarted) {
                 audioPlayer.play().catch(error => {
                     console.error("Autoplay failed:", error);
                 });
-                audioPlayer.loop = true;
             }
+
+            audioPlayer.removeEventListener("ended", handleLoopEnd);
+            audioPlayer.addEventListener("ended", handleLoopEnd);
 
             filenameDisplay.classList.remove("swipe-out-left", "swipe-out-right");
             filenameDisplay.textContent = `${currentSample}`;
             
             if (sessionStarted) {
-                filenameDisplay.style.display = "block"; // Show filename display after session starts
+                filenameDisplay.style.display = "block";
                 filenameDisplay.classList.add("fade-in");
             }
 
@@ -81,18 +89,31 @@ async function loadSample(autoplay = true, swipeDirection = "left") {
     }, sessionStarted ? 500 : 0);
 }
 
+// Function to handle audio loop ending
+function handleLoopEnd() {
+    loopCount += 1;
+    if (loopCount < maxLoops) {
+        document.getElementById("audioPlayer").play();
+    } else {
+        document.getElementById("audioPlayer").pause(); // Stop playback after three loops
+    }
+}
+
+// Function to restart the loop on click
+function restartLoop() {
+    loopCount = 0; // Reset loop count
+    document.getElementById("audioPlayer").play(); // Restart audio from the beginning
+}
+
 // Start session on "Start Session" button click
 function startSession() {
     sessionStarted = true;
     
     const audioPlayer = document.getElementById("audioPlayer");
-    audioPlayer.loop = true;
-    
-    document.getElementById("startButton").style.display = "none"; // Hide the start button
+    document.getElementById("startButton").style.display = "none";
 
-    // Display filename and start playback on first click
     const filenameDisplay = document.getElementById("filenameDisplay");
-    filenameDisplay.style.display = "block"; // Show filename display
+    filenameDisplay.style.display = "block";
     filenameDisplay.textContent = `${currentSample}`;
     filenameDisplay.classList.add("fade-in");
 
@@ -113,20 +134,17 @@ async function saveSample() {
         const result = await res.json();
 
         if (res.ok) {
-            // Success message
             saveMessage.textContent = "File saved to Google Drive successfully!";
             saveMessage.classList.add("fade-in-out", "success");
         } else {
             throw new Error(result.error || "Unknown error");
         }
     } catch (error) {
-        // Failure message
         console.error("Error adding file to Google Drive:", error);
         saveMessage.textContent = "Failed to save to Google Drive.";
         saveMessage.classList.add("fade-in-out", "failure");
     }
 
-    // Remove fade-in-out and color class after the animation ends
     setTimeout(() => {
         saveMessage.classList.remove("fade-in-out", "success", "failure");
     }, 3000);
