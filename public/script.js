@@ -1,8 +1,6 @@
 let currentSample = null;
 let originalFile = null;
 let sessionStarted = false;
-let loopCount = 0;
-const maxLoops = 3;
 let audioContext = null;
 let audioBuffer = null;
 let audioSource = null;
@@ -40,14 +38,14 @@ async function init() {
             setupDesktopDragControls();
         }
 
-        // Add click listener to restart the sample loop
-        document.getElementById("audioContainer").addEventListener("click", restartLoop);
+        // Add click listener to restart the sample
+        document.getElementById("audioContainer").addEventListener("click", startPlayback);
     } else {
         document.getElementById("signInButton").style.display = "block";
     }
 }
 
-// Function to load a sample and handle looping
+// Function to load a sample
 async function loadSample(autoplay = true, swipeDirection = "left") {
     const filenameDisplay = document.getElementById("filenameDisplay");
     filenameDisplay.classList.remove("swipe-out-left", "swipe-out-right", "fade-in");
@@ -64,7 +62,6 @@ async function loadSample(autoplay = true, swipeDirection = "left") {
             originalFile = origFile;
 
             await loadAudioBuffer(`/api/sample/${file}`);
-            loopCount = 0; // Reset loop count for new sample
 
             if (autoplay && sessionStarted) {
                 startPlayback();
@@ -92,6 +89,9 @@ async function loadAudioBuffer(url) {
     const response = await fetch(url);
     const arrayBuffer = await response.arrayBuffer();
     audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+
+    // Log the duration of the loaded audio file
+    console.log(`Loaded audio file length: ${audioBuffer.duration.toFixed(2)} seconds`);
 }
 
 // Start playback with seamless looping
@@ -102,17 +102,9 @@ function startPlayback() {
 
     audioSource = audioContext.createBufferSource();
     audioSource.buffer = audioBuffer;
-    audioSource.loop = true; // Enable looping
+    audioSource.loop = true; // Enable infinite looping
     audioSource.connect(audioContext.destination);
     audioSource.start();
-}
-
-// Function to handle audio loop ending
-function handleLoopEnd() {
-    loopCount += 1;
-    if (loopCount >= maxLoops) {
-        stopPlayback();
-    }
 }
 
 // Stop playback
@@ -121,12 +113,6 @@ function stopPlayback() {
         audioSource.stop();
         audioSource = null;
     }
-}
-
-// Function to restart the loop on click
-function restartLoop() {
-    loopCount = 0; // Reset loop count
-    startPlayback(); // Restart audio from the beginning
 }
 
 // Start session on "Start Session" button click
