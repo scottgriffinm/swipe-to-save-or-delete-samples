@@ -174,7 +174,7 @@ async function saveSample() {
         const result = await res.json();
 
         if (res.ok) {
-            saveMessage.textContent = "Saved to /producer_session";
+            saveMessage.textContent = "Saved to drive/producer_session";
             saveMessage.classList.add("fade-in-out", "success");
         } else {
             throw new Error(result.error || "Unknown error");
