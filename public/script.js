@@ -3,6 +3,9 @@ let originalFile = null;
 let sessionStarted = false;
 let loopCount = 0;
 const maxLoops = 3;
+let audioContext = null;
+let audioBuffer = null;
+let audioSource = null;
 
 // Detect if the device is mobile
 function isMobileDevice() {
@@ -47,7 +50,6 @@ async function init() {
 // Function to load a sample and handle looping
 async function loadSample(autoplay = true, swipeDirection = "left") {
     const filenameDisplay = document.getElementById("filenameDisplay");
-
     filenameDisplay.classList.remove("swipe-out-left", "swipe-out-right", "fade-in");
 
     if (sessionStarted && filenameDisplay.style.display === "block") {
@@ -61,22 +63,16 @@ async function loadSample(autoplay = true, swipeDirection = "left") {
             currentSample = file;
             originalFile = origFile;
 
-            const audioPlayer = document.getElementById("audioPlayer");
-            audioPlayer.src = `/api/sample/${file}`;
+            await loadAudioBuffer(`/api/sample/${file}`);
             loopCount = 0; // Reset loop count for new sample
 
             if (autoplay && sessionStarted) {
-                audioPlayer.play().catch(error => {
-                    console.error("Autoplay failed:", error);
-                });
+                startPlayback();
             }
-
-            audioPlayer.removeEventListener("ended", handleLoopEnd);
-            audioPlayer.addEventListener("ended", handleLoopEnd);
 
             filenameDisplay.classList.remove("swipe-out-left", "swipe-out-right");
             filenameDisplay.textContent = `${currentSample}`;
-            
+
             if (sessionStarted) {
                 filenameDisplay.style.display = "block";
                 filenameDisplay.classList.add("fade-in");
@@ -89,37 +85,62 @@ async function loadSample(autoplay = true, swipeDirection = "left") {
     }, sessionStarted ? 500 : 0);
 }
 
+// Load the audio buffer
+async function loadAudioBuffer(url) {
+    audioContext = audioContext || new (window.AudioContext || window.webkitAudioContext)();
+    
+    const response = await fetch(url);
+    const arrayBuffer = await response.arrayBuffer();
+    audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+}
+
+// Start playback with seamless looping
+function startPlayback() {
+    if (audioSource) {
+        audioSource.stop(); // Stop any previous source before starting new playback
+    }
+
+    audioSource = audioContext.createBufferSource();
+    audioSource.buffer = audioBuffer;
+    audioSource.loop = true; // Enable looping
+    audioSource.connect(audioContext.destination);
+    audioSource.start();
+}
+
 // Function to handle audio loop ending
 function handleLoopEnd() {
     loopCount += 1;
-    if (loopCount < maxLoops) {
-        document.getElementById("audioPlayer").play();
-    } else {
-        document.getElementById("audioPlayer").pause(); // Stop playback after three loops
+    if (loopCount >= maxLoops) {
+        stopPlayback();
+    }
+}
+
+// Stop playback
+function stopPlayback() {
+    if (audioSource) {
+        audioSource.stop();
+        audioSource = null;
     }
 }
 
 // Function to restart the loop on click
 function restartLoop() {
     loopCount = 0; // Reset loop count
-    document.getElementById("audioPlayer").play(); // Restart audio from the beginning
+    startPlayback(); // Restart audio from the beginning
 }
 
 // Start session on "Start Session" button click
 function startSession() {
     sessionStarted = true;
     
-    const audioPlayer = document.getElementById("audioPlayer");
+    const filenameDisplay = document.getElementById("filenameDisplay");
     document.getElementById("startButton").style.display = "none";
 
-    const filenameDisplay = document.getElementById("filenameDisplay");
     filenameDisplay.style.display = "block";
     filenameDisplay.textContent = `${currentSample}`;
     filenameDisplay.classList.add("fade-in");
 
-    audioPlayer.play().catch(error => {
-        console.error("Autoplay blocked. User interaction required:", error);
-    });
+    startPlayback(); // Start audio playback
 }
 
 // Save the sample to Google Drive
