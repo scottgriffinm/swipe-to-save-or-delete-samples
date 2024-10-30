@@ -121,10 +121,7 @@ function startPlayback() {
 
     // Set a new timeout to stop playback after three times the duration
     playbackTimeoutId = setTimeout(() => {
-        if (audioSource) {
-            audioSource.stop(); // Stop playback after the specified duration
-            audioSource = null; // Clear the source to allow restarting
-        }
+       stopPlayback();
     }, playbackDuration);
 }
 
