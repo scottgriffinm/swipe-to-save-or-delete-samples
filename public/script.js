@@ -134,14 +134,14 @@ async function saveSample() {
         const result = await res.json();
 
         if (res.ok) {
-            saveMessage.textContent = "File saved to Google Drive successfully!";
+            saveMessage.textContent = "Saved to /producer_session";
             saveMessage.classList.add("fade-in-out", "success");
         } else {
             throw new Error(result.error || "Unknown error");
         }
     } catch (error) {
         console.error("Error adding file to Google Drive:", error);
-        saveMessage.textContent = "Failed to save to Google Drive.";
+        saveMessage.textContent = "Failed to save.";
         saveMessage.classList.add("fade-in-out", "failure");
     }
 

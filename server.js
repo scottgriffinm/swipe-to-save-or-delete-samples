@@ -127,7 +127,7 @@ app.post("/api/add-to-drive", isAuthenticated, async (req, res) => {
 
     try {
         const folderResponse = await drive.files.list({
-            q: "name = 'sample saves' and mimeType = 'application/vnd.google-apps.folder'",
+            q: "name = 'producer_session' and mimeType = 'application/vnd.google-apps.folder'",
             fields: "files(id, name)",
         });
 
@@ -136,7 +136,7 @@ app.post("/api/add-to-drive", isAuthenticated, async (req, res) => {
             folderId = folderResponse.data.files[0].id;
         } else {
             const folder = await drive.files.create({
-                resource: { name: "sample saves", mimeType: "application/vnd.google-apps.folder" },
+                resource: { name: "producer_session", mimeType: "application/vnd.google-apps.folder" },
                 fields: "id",
             });
             folderId = folder.data.id;
