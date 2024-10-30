@@ -4,6 +4,7 @@ let sessionStarted = false;
 let audioContext = null;
 let audioBuffer = null;
 let audioSource = null;
+let playbackTimeoutId = null; // Store the timeout ID globally
 
 // Detect if the device is mobile
 function isMobileDevice() {
@@ -96,15 +97,35 @@ async function loadAudioBuffer(url) {
 
 // Start playback with seamless looping
 function startPlayback() {
+    // Clear any existing audio source and timeout
     if (audioSource) {
         audioSource.stop(); // Stop any previous source before starting new playback
     }
+    if (playbackTimeoutId) {
+        clearTimeout(playbackTimeoutId); // Clear any previous timeout
+    }
 
+    // Create and configure the new audio source
     audioSource = audioContext.createBufferSource();
     audioSource.buffer = audioBuffer;
-    audioSource.loop = true; // Enable infinite looping
+    audioSource.loop = true; // Enable looping, which we will manually control
+
+    // Connect the source to the output
     audioSource.connect(audioContext.destination);
+
+    // Start the audio source
     audioSource.start();
+
+    // Calculate the stop time as three times the duration
+    const playbackDuration = audioBuffer.duration * 3 * 1000; // Convert seconds to milliseconds
+
+    // Set a new timeout to stop playback after three times the duration
+    playbackTimeoutId = setTimeout(() => {
+        if (audioSource) {
+            audioSource.stop(); // Stop playback after the specified duration
+            audioSource = null; // Clear the source to allow restarting
+        }
+    }, playbackDuration);
 }
 
 // Stop playback
